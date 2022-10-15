@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
 
+const { validationResult } = require('express-validator/check')
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -61,6 +63,10 @@ exports.getSignup = (req, res, next) => {
         path: '/signup',
         pageTitle: 'Signup',
         errorMessage: errorMessage,
+        oldInput: {
+            email: '',
+        },
+        validationErrors: [],
     })
 }
 
@@ -68,35 +74,42 @@ exports.postSignup = (req, res, next) => {
     const email = req.body.email
     const password = req.body.password
 
-    User.findOne({ email: email })
-        .then(foundUser => {
-            if (foundUser) {
-                req.flash('error', 'Email already exists !')
-                return res.redirect('/signup')
-            }
-            return bcrypt
-                .hash(password, 12)
-                .then(hashedPassword => {
-                    const user = new User({
-                        email: email,
-                        password: hashedPassword,
-                        cart: { items: [] },
-                    })
-                    return user.save()
-                })
-                .then(user => {
-                    res.redirect('/login')
-                    return transporter.sendMail({
-                        from: 'sakib@gmail.com',
-                        to: user.email,
-                        subject: 'Sending Email using Node.js',
-                        text: 'Your account has been created successfully.',
-                    })
-                })
-                .then(result => {
-                    console.log('Mail sent successfully.')
-                })
-                .catch(err => console.log(err))
+    const errors = validationResult(req)
+    console.log('signuperror', errors)
+
+    if (!errors.isEmpty()) {
+        return res.status(403).render('auth/signup', {
+            path: '/signup',
+            pageTitle: 'Signup',
+            errorMessage: errors.array()[0].msg,
+            oldInput: {
+                email: email,
+            },
+            validationErrors: errors.array(),
+        })
+    }
+
+    bcrypt
+        .hash(password, 12)
+        .then(hashedPassword => {
+            const user = new User({
+                email: email,
+                password: hashedPassword,
+                cart: { items: [] },
+            })
+            return user.save()
+        })
+        .then(user => {
+            res.redirect('/login')
+            return transporter.sendMail({
+                from: 'sakib@gmail.com',
+                to: user.email,
+                subject: 'Sending Email using Node.js',
+                text: 'Your account has been created successfully.',
+            })
+        })
+        .then(result => {
+            console.log('Mail sent successfully.')
         })
         .catch(err => console.log(err))
 }
