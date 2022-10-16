@@ -1,5 +1,6 @@
 const Product = require('../models/product')
 const { validationResult } = require('express-validator')
+const fs = require('fs')
 
 exports.getAddProduct = (req, res, next) => {
     res.render('admin/edit-product', {
@@ -136,6 +137,7 @@ exports.postEditProduct = (req, res, next) => {
                 product.price = updatedPrice
                 product.description = updatedDesc
                 if (updatedImage) {
+                    fs.unlinkSync(product.imageUrl)
                     product.imageUrl = updatedImage.path
                 }
                 return product.save()
