@@ -3,7 +3,7 @@ const express = require('express')
 const authController = require('../controllers/auth')
 const isAuth = require('../middleware/is-auth')
 
-const { check } = require('express-validator/check')
+const { check } = require('express-validator')
 const User = require('../models/user')
 
 const router = express.Router()
