@@ -5,7 +5,7 @@ const PDFDocument = require('pdfkit')
 const Product = require('../models/product')
 const Order = require('../models/order')
 
-const ITEMS_PER_PAGE = 2
+const ITEMS_PER_PAGE = 4
 
 exports.getProducts = (req, res, next) => {
     const page = +req.query.page || 1
@@ -29,6 +29,7 @@ exports.getProducts = (req, res, next) => {
                 nextPage: page + 1,
                 lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
                 totalProducts: totalItems,
+                shouldShowPagination: ITEMS_PER_PAGE < totalItems,
             })
         })
         .catch(err => {
@@ -81,6 +82,7 @@ exports.getIndex = (req, res, next) => {
                 nextPage: page + 1,
                 lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
                 totalProducts: totalItems,
+                shouldShowPagination: ITEMS_PER_PAGE < totalItems,
             })
         })
         .catch(err => {
