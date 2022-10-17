@@ -111,7 +111,7 @@ app.use((error, req, res, next) => {
 })
 
 mongoose
-    .connect(MONGODB_URI, { useNewUrlParser: true })
+    .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
         app.listen(3000, () => {
             console.log('...Listening on port 3000')
