@@ -47,7 +47,6 @@ exports.getProduct = (req, res, next) => {
                 product: product,
                 pageTitle: product.title,
                 path: '/products',
-                isAuthenticated: req.session.isLoggedIn,
             })
         })
         .catch(err => {
@@ -110,7 +109,6 @@ exports.getCart = (req, res, next) => {
                 path: '/cart',
                 pageTitle: 'Your Cart',
                 products: products,
-                isAuthenticated: req.session.isLoggedIn,
             })
         })
         .catch(err => {
@@ -138,6 +136,37 @@ exports.postCartDeleteProduct = (req, res, next) => {
         .removeFromCart(prodId)
         .then(result => {
             res.redirect('/cart')
+        })
+        .catch(err => {
+            const error = new Error(err)
+            error.httpStatusCode = 500
+            return next(error)
+        })
+}
+
+exports.getCheckout = (req, res, next) => {
+    req.user
+        .populate('cart.items.productId')
+        .execPopulate()
+        .then(user => {
+            let products = []
+            user.cart.items.forEach(i => {
+                if (i.productId) {
+                    products.push({
+                        quantity: i.quantity,
+                        product: { ...i.productId._doc },
+                    })
+                }
+            })
+            res.render('shop/checkout', {
+                path: '/checkout',
+                pageTitle: 'Checkout',
+                products: products,
+                totalSum: products.reduce(
+                    (sum, p) => sum + p.quantity * p.product.price,
+                    0
+                ),
+            })
         })
         .catch(err => {
             const error = new Error(err)
@@ -186,7 +215,6 @@ exports.getOrders = (req, res, next) => {
                 path: '/orders',
                 pageTitle: 'Your Orders',
                 orders: orders,
-                isAuthenticated: req.session.isLoggedIn,
             })
         })
         .catch(err => {
