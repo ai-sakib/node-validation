@@ -1,8 +1,9 @@
-const express = require('express')
-require('dotenv').config()
-
 const path = require('path')
 const fs = require('fs')
+const https = require('https')
+
+const express = require('express')
+require('dotenv').config()
 
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
@@ -65,6 +66,9 @@ const accessLogStream = fs.createWriteStream(
 app.use(helmet())
 app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
+
+const privateKey = fs.readFileSync('secret.key')
+const certificate = fs.readFileSync('server.cert')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(multer({ storage: fileStorage, fileFilter }).single('image'))
@@ -130,6 +134,11 @@ mongoose
     .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
         let port = process.env.PORT
+        // https
+        //     .createServer({ key: privateKey, cert: certificate }, app)
+        //     .listen(port, () => {
+        //         console.log(`...Listening on port ${port}`)
+        //     })
         app.listen(port, () => {
             console.log(`...Listening on port ${port}`)
         })
