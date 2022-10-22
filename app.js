@@ -1,6 +1,7 @@
-const path = require('path')
-
 const express = require('express')
+require('dotenv').config()
+
+const path = require('path')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const session = require('express-session')
@@ -8,11 +9,12 @@ const MongoDBStore = require('connect-mongodb-session')(session)
 const csrf = require('csurf')
 const flash = require('connect-flash')
 const multer = require('multer')
+const helmet = require('helmet')
 
 const errorController = require('./controllers/error')
 const User = require('./models/user')
 
-const MONGODB_URI = 'mongodb://localhost:27017/shop'
+const MONGODB_URI = process.env.MONGODB_URI
 
 const app = express()
 const store = new MongoDBStore({
@@ -50,6 +52,8 @@ const adminRoutes = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
 const authRoutes = require('./routes/auth')
 
+app.use(helmet())
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(multer({ storage: fileStorage, fileFilter }).single('image'))
 
@@ -58,7 +62,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')))
 
 app.use(
     session({
-        secret: 'my secret',
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         store: store,
@@ -113,8 +117,9 @@ app.use((error, req, res, next) => {
 mongoose
     .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
-        app.listen(3000, () => {
-            console.log('...Listening on port 3000')
+        let port = process.env.PORT
+        app.listen(port, () => {
+            console.log(`...Listening on port ${port}`)
         })
     })
     .catch(err => {
