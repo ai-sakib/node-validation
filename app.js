@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const https = require('https')
+// const https = require('https')
 
 const express = require('express')
 require('dotenv').config()
@@ -67,8 +67,8 @@ app.use(helmet())
 app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
 
-const privateKey = fs.readFileSync('secret.key')
-const certificate = fs.readFileSync('server.cert')
+// const privateKey = fs.readFileSync('secret.key')
+// const certificate = fs.readFileSync('server.cert')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(multer({ storage: fileStorage, fileFilter }).single('image'))
